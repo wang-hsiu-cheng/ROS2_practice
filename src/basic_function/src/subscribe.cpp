@@ -1,33 +1,32 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int64.hpp"
 
+using std::placeholders::_1;
+
 int message = 0;
-void topic_callback(const std_msgs::msg::Int64::SharedPtr msg) {
-    printf("test\n");
-    printf("%ld\n",  msg->data);
-    message = (int)msg->data;
-    // RCLCPP_INFO(node->get_logger(), "%d %ld\n", message, msg->data);
-}
+
+class SubscriberNode : public rclcpp::Node
+{
+public:
+    SubscriberNode(): Node("sub_name")
+    {
+        subscription_ = this->create_subscription<std_msgs::msg::Int64>("number", 10, std::bind(&SubscriberNode::topic_callback, this, _1));
+    }
+
+private:
+    void topic_callback(const std_msgs::msg::Int64::SharedPtr msg) const {
+        message = (int)msg->data;
+        printf("I heard: '%ld'\n", msg->data);
+        RCLCPP_INFO(this->get_logger(), "I heard: '%ld'", msg->data);
+    }
+
+    rclcpp::Subscription<std_msgs::msg::Int64>::SharedPtr subscription_;
+};
+
 int main(int argc, char * argv[])
 {
-    rclcpp::init(argc, argv);   // 初始化ROS
-    rclcpp::Subscription<std_msgs::msg::Int64>::SharedPtr subscription_;
-    
-    // 創建一個叫做 sub_name 的 Node 
-    auto node = rclcpp::Node::make_shared("sub_name");  
-    subscription_ = node->create_subscription<std_msgs::msg::Int64>("number", 10, topic_callback);
-    
-    // use rate to loop at 1Hz
-    rclcpp::WallRate loop_rate(1);
-
-    // 讓Node持續運行
-    while(rclcpp::ok()) {
-        rclcpp::spin_some(node);
-        RCLCPP_INFO(node->get_logger(), "Subsccribing: %d", message);
-        loop_rate.sleep();
-    }
-    
-    // 關閉ROS
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<SubscriberNode>());
     rclcpp::shutdown();
     
     return 0;
