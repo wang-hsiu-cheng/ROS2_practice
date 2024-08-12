@@ -1,4 +1,7 @@
 */.vscode
+/.vscode
 /build
 /install
 /log
+*.png
+*.txt
