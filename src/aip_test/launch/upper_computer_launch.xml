@@ -1,0 +1,6 @@
+<launch>
+    <!-- <node pkg="basic_function" exec="listener" name="lambda_publish"/>
+    <node pkg="basic_function" exec="talker" name="lambda_subscribe"/> -->
+    <node pkg="turtlesim" exec="turtlesim_node" name="turtlesim_node" />
+    <node pkg="aip_test" exec="talker" name="talker"/>
+</launch>
