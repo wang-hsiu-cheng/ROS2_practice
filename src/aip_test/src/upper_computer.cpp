@@ -14,9 +14,8 @@ TurtleController::TurtleController() : Node("turtle_controller")
 }
 void TurtleController::pose_callback(const turtlesim::msg::Pose::SharedPtr msg)
 {
-    // Log the pose information
-    RCLCPP_INFO(this->get_logger(), "callback: speed = %f, angular = %f, theta = %f",
-        msg->linear_velocity, msg->angular_velocity, msg->theta);
+    // RCLCPP_INFO(this->get_logger(), "callback: speed = %f, angular = %f, theta = %f",
+    //     msg->linear_velocity, msg->angular_velocity, msg->theta);
     rVx = msg->linear_velocity * cos(msg->theta);
     rVy = msg->linear_velocity * sin(msg->theta);
     rW = msg->angular_velocity;
@@ -24,10 +23,16 @@ void TurtleController::pose_callback(const turtlesim::msg::Pose::SharedPtr msg)
 void TurtleController::initialize_path()
 {
     // setup path
-    path_.push_back(Eigen::Vector3d(2.0, 0.0, 3.1415926536 / 2));
-    path_.push_back(Eigen::Vector3d(2.0, 2.0, 3.1415926536 / 2));
-    path_.push_back(Eigen::Vector3d(0.0, 2.0, 3.1415926536 / 2));
-    path_.push_back(Eigen::Vector3d(0.0, 0.0, 3.1415926536 / 2));
+    path_.push_back(Eigen::Vector3d(4.0, 0.0, 0));
+    path_.push_back(Eigen::Vector3d(4.0, 4.0, 0));
+    // path_.push_back(Eigen::Vector3d(0.0, 4.0, 0));
+    // path_.push_back(Eigen::Vector3d(0.0, 4.0, 3.1415926536 / 2));
+    // path_.push_back(Eigen::Vector3d(0.0, 0.0, 3.1415926536 / 2));
+
+	obsticals.push_back(Eigen::Vector3d(2.0, 0.0, 0.2));
+    obsticals.push_back(Eigen::Vector3d(4.0, 2.0, 0.2));
+    // obsticals.push_back(Eigen::Vector3d(0.0, 2.0, 0.2));
+    // obsticals.push_back(Eigen::Vector3d(2.0, 2.0, 0.2));
 }
 
 void TurtleController::move_turtle()
@@ -38,8 +43,8 @@ void TurtleController::move_turtle()
     {
         // Example logic to move turtle towards the first point in the path
         if (!path_.empty()) {
-            RCLCPP_INFO(this->get_logger(), "point: x=%f, y=%f, theta=%f",
-                path_.front().x(), path_.front().y(), path_.front().z());
+            // RCLCPP_INFO(this->get_logger(), "point: x=%f, y=%f, theta=%f",
+            //     path_.front().x(), path_.front().y(), path_.front().z());
             moveTo(path_.front().x(), path_.front().y(), path_.front().z());
             path_.erase(path_.begin());  // Remove the first point after moving towards it
         }
@@ -57,13 +62,114 @@ int main(int argc, char * argv[])
 
     return 0;
 }
-
-void pointToDist(const float xGoal, const float yGoal, const float wGoal)
+void TurtleController::updateUnitVector(double moved)
 {
+    if (moved < d1)
+    {
+        x_vec = x_vec;
+        y_vec = y_vec;
+    }
+    else if (moved >= d1 && goalDistance - moved > d2)
+    {
+        double angVel = VelocityNow / radius;
+        double temp;
+        // rotation matrix to update unit vector velocity
+        if (obsOnRoad[0].second)
+        {
+            temp = cos(angVel * deltaTime) * x_vec + sin(angVel * deltaTime) * y_vec;
+            y_vec = -sin(angVel * deltaTime) * x_vec + cos(angVel * deltaTime) * y_vec;
+        }
+        else
+        {
+            temp = cos(angVel * deltaTime) * x_vec - sin(angVel * deltaTime) * y_vec;
+            y_vec = sin(angVel * deltaTime) * x_vec + cos(angVel * deltaTime) * y_vec;
+        }
+        x_vec = temp;
+    }
+    else
+    {
+        x_vec = x_vec;
+        y_vec = y_vec;
+    }
+}
+void TurtleController::planNewPath(std::vector<pair<int, bool>> obsOnRoad, double xGoal, double yGoal)
+{
+    double theta, D1, D2;
+    pair<double, double> p1, p2;
+    radius = R + obsticals[obsOnRoad[0].first].z();
+    D1 = hypot((obsticals[obsOnRoad[0].first].x() - botPositionX), (obsticals[obsOnRoad[0].first].y() - botPositionY)); // distance between start point and obstical
+    d1 = sqrt(pow(D1, 2) - pow(radius, 2));                                                                         // first straight line path
+    D2 = hypot((obsticals[obsOnRoad[0].first].x() - xGoal), (obsticals[obsOnRoad[0].first].y() - yGoal));               // distance between obstical and end point
+    d2 = sqrt(pow(D2, 2) - pow(radius, 2));                                                                         // second straight line path
+
+    if (obsOnRoad[0].second) // use rotation matrix to turn clockwise
+    {
+        x_vec = ((obsticals[obsOnRoad[0].first].x() - botPositionX) * d1 / D1 + (obsticals[obsOnRoad[0].first].y() - botPositionY) * -radius / D1) / D1;
+        y_vec = ((obsticals[obsOnRoad[0].first].x() - botPositionX) * radius / D1 + (obsticals[obsOnRoad[0].first].y() - botPositionY) * d1 / D1) / D1;
+    }
+    else // use rotation matrix to turn counterclockwise
+    {
+        x_vec = ((obsticals[obsOnRoad[0].first].x() - botPositionX) * d1 / D1 + (obsticals[obsOnRoad[0].first].y() - botPositionY) * radius / D1) / D1;
+        y_vec = ((obsticals[obsOnRoad[0].first].x() - botPositionX) * -radius / D1 + (obsticals[obsOnRoad[0].first].y() - botPositionY) * d1 / D1) / D1;
+    }
+    p1.first = x_vec * d1 + botPositionX;
+    p1.second = y_vec * d1 + botPositionY;
+    p2.first = ((obsticals[obsOnRoad[0].first].x() - xGoal) * d2 / D2 + (obsticals[obsOnRoad[0].first].y() - yGoal) * radius / D2) / D2 * d2 + xGoal;
+    p2.second = ((obsticals[obsOnRoad[0].first].x() - xGoal) * -radius / D1 + (obsticals[obsOnRoad[0].first].y() - yGoal) * d2 / D2) / D2 * d2 + yGoal;
+    cout << p2.first << " " << p2.second << endl;
+    // calculate the angle of the curve to avoid the obstical
+    theta = acos(((p1.first - obsticals[obsOnRoad[0].first].x()) * (p2.first - obsticals[obsOnRoad[0].first].x()) + (p1.second - obsticals[obsOnRoad[0].first].y()) * (p2.second - obsticals[obsOnRoad[0].first].y())) / pow(radius, 2));
+    theta = (theta > PI) ? 2 * PI - theta : theta;
+    goalDistance = d1 + d2 + radius * theta; // total path length to avoid the obstical between two goal points
+    cout << "theta: " << theta << endl;
+    cout << "goalDistance: " << goalDistance << endl;
+}
+
+void TurtleController::pointToDist(double xGoal, double yGoal, double wGoal)
+{
+    cout << "(botPositionX, botPositionY): " << "(" << botPositionX << ", " << botPositionY << ")\n";
     goalDistance = hypot((xGoal - botPositionX), (yGoal - botPositionY));
     x_vec = (xGoal - botPositionX) / goalDistance;
     y_vec = (yGoal - botPositionY) / goalDistance;
     Goal_w = wGoal;
+
+    obsOnRoad.clear();
+    Eigen::Vector3d pt;
+    cout << "obsticals.size: " << (int)obsticals.size() << endl;
+    for (int i = 0; i < (int)obsticals.size(); i++)
+    {
+        std::vector<Eigen::Vector3d> pts;
+        // record three points of the obstical(top, bottom, center)
+        pts.push_back(pt = {(obsticals[i].x() + y_vec * obsticals[i].z()), (obsticals[i].y() - x_vec * obsticals[i].z()), 0.0});
+        pts.push_back(pt = {(obsticals[i].x() - y_vec * obsticals[i].z()), (obsticals[i].y() + x_vec * obsticals[i].z()), 0.0});
+        pts.push_back(pt = {obsticals[i].x(), obsticals[i].y(), 0.0});
+        for (int j = 0; j < 3; j++)
+        {
+            float x = pts[j].x();
+            float y = pts[j].y();
+            // use the four formula to check if the points are in the road area
+            if (y_vec * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) - R * hypot(x_vec, y_vec) / abs(x_vec) < 0 &&
+                y_vec * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) + R * hypot(x_vec, y_vec) / abs(x_vec) > 0 &&
+                x_vec * x_vec / -y_vec * (x - botPositionX) - (y - botPositionY) < 0 &&
+                x_vec * x_vec / -y_vec * (x - xGoal) - (y - yGoal) > 0)
+            {
+                pair<int, bool> temp(i, true);
+                if ((y_vec / x_vec) * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) < 0) // should turn counterclockwise
+                    temp.second = false;
+                obsOnRoad.push_back(temp); // record the obsticals that really on the road
+                break;
+            }
+        }
+    }
+    if (!obsOnRoad.empty())
+    {
+        hasObs = true;
+        cout << "ya" << endl;
+        planNewPath(obsOnRoad, xGoal, yGoal);
+    }
+    else 
+        hasObs = false;
+
     return;
 }
 
@@ -130,17 +236,13 @@ int TurtleController::moveTo(double _x, double _y, double _w)
         
         wMoved += rW * deltaTime;
         remain_w = Goal_w - wMoved;
-        RCLCPP_INFO(this->get_logger(), "wMoved: %f\n", wMoved);
-
-        // world_rVel = TF_Robot_to_World(rVx, rVy, wMoved);
+        // RCLCPP_INFO(this->get_logger(), "wMoved: %f\n", wMoved);
         
-        // xMoved += world_rVel.x() * deltaTime;
-        // yMoved += world_rVel.y() * deltaTime;
         xMoved += rVx * deltaTime;
         yMoved += rVy * deltaTime;
         Moved = hypot(xMoved, yMoved);
         remain = goalDistance - Moved;
-        RCLCPP_INFO(this->get_logger(), "rVx: %f, rVy: %f, Moved: %f\n", rVx, rVy, Moved);
+        // RCLCPP_INFO(this->get_logger(), "rVx: %f, rVy: %f, Moved: %f\n", rVx, rVy, Moved);
 
         if (abs(remain) > 0.005)
         {
@@ -160,6 +262,8 @@ int TurtleController::moveTo(double _x, double _y, double _w)
             else
                 VelocityNow = vel_2;
 
+            if (hasObs)
+                updateUnitVector(abs(Moved));
             if (goalDistance < 0)
             {
                 VelX = -VelocityNow * x_vec;
@@ -218,9 +322,7 @@ int TurtleController::moveTo(double _x, double _y, double _w)
         VelY = TF_vel.y();
 
         // RCLCPP_INFO(this->get_logger(), "step 4\n");
-        RCLCPP_INFO(this->get_logger(), "ang vel: %f\n", AngVelW);
-        // Publish the cmd_vel
-        // cmd_vel_pub(VelX, VelY, AngVelW);
+        // RCLCPP_INFO(this->get_logger(), "ang vel: %f\n", AngVelW);
         pub.linear.x = VelX;
         pub.linear.y = VelY;
         pub.angular.z = AngVelW;

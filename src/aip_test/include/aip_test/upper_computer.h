@@ -11,6 +11,8 @@
 #ifndef INC_LOCAL_PLANNER_H_
 #define INC_LOCAL_PLANNER_H_
 
+#define PI 3.141592653589793238462643279502884
+
 #include "geometry_msgs/msg/twist.hpp"
 #include "turtlesim/msg/pose.hpp"
 #include <iostream>
@@ -27,21 +29,23 @@ public:
 
 private:
     void initParam();
+    void pointToDist(double xGoal, double yGoal, double wGoal);
     int moveTo(double x, double y, double w);
     void initialize_path();
+    void planNewPath(std::vector<pair<int, bool>> obsOnRoad, double, double);
+    void updateUnitVector(double moved);
 
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
     rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr subscription_;
     rclcpp::TimerBase::SharedPtr timer_;
     /* path */
     std::vector<Eigen::Vector3d> path_;
+    std::vector<Eigen::Vector3d> obsticals;
     /* call back */
     void pose_callback(const turtlesim::msg::Pose::SharedPtr msg);
 
 };
 
-void pointToDist(const float xGoal, const float yGoal, const float wGoal);
-void initParam();
 Eigen::Vector3d TF_World_to_Robot(float World_x, float World_y, double Robot_theta);
 Eigen::Vector3d TF_Robot_to_World(float Robot_x, float Robot_y, double Robot_theta);
 // void cmd_vel_pub(float Vx_, float Vy_, float W_);
@@ -84,6 +88,11 @@ float yaw_2;
 float angle_0;
 float angle_1;
 float angle_2;
+
+bool hasObs = false;
+float d1, d2, radius;
+std::vector<pair<int, bool>> obsOnRoad;
+float R = 0.5;
 
 // cmd_vel
 double Vx, Vy, W;
