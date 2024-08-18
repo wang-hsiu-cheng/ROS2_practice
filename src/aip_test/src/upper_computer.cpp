@@ -23,15 +23,15 @@ void TurtleController::pose_callback(const turtlesim::msg::Pose::SharedPtr msg)
 void TurtleController::initialize_path()
 {
     // setup path
-    path_.push_back(Eigen::Vector3d(4.0, 0.0, 0));
-    path_.push_back(Eigen::Vector3d(4.0, 4.0, 0));
-    // path_.push_back(Eigen::Vector3d(0.0, 4.0, 0));
+    // path_.push_back(Eigen::Vector3d(4.0, 0.0, 0));
+    // path_.push_back(Eigen::Vector3d(4.0, 4.0, 0));
+    path_.push_back(Eigen::Vector3d(0.0, 4.0, 0));
     // path_.push_back(Eigen::Vector3d(0.0, 4.0, 3.1415926536 / 2));
     // path_.push_back(Eigen::Vector3d(0.0, 0.0, 3.1415926536 / 2));
 
-	obsticals.push_back(Eigen::Vector3d(2.0, 0.0, 0.2));
-    obsticals.push_back(Eigen::Vector3d(4.0, 2.0, 0.2));
-    // obsticals.push_back(Eigen::Vector3d(0.0, 2.0, 0.2));
+	// obsticals.push_back(Eigen::Vector3d(2.0, 0.0, 0.2));
+    // obsticals.push_back(Eigen::Vector3d(4.0, 2.0, 0.2));
+    obsticals.push_back(Eigen::Vector3d(0.0, 2.0, 0.2));
     // obsticals.push_back(Eigen::Vector3d(2.0, 2.0, 0.2));
 }
 
@@ -106,16 +106,19 @@ void TurtleController::planNewPath(std::vector<pair<int, bool>> obsOnRoad, doubl
     {
         x_vec = ((obsticals[obsOnRoad[0].first].x() - botPositionX) * d1 / D1 + (obsticals[obsOnRoad[0].first].y() - botPositionY) * -radius / D1) / D1;
         y_vec = ((obsticals[obsOnRoad[0].first].x() - botPositionX) * radius / D1 + (obsticals[obsOnRoad[0].first].y() - botPositionY) * d1 / D1) / D1;
+        p2.first = ((obsticals[obsOnRoad[0].first].x() - xGoal) * d2 / D2 + (obsticals[obsOnRoad[0].first].y() - yGoal) * radius / D2) / D2 * d2 + xGoal;
+        p2.second = ((obsticals[obsOnRoad[0].first].x() - xGoal) * -radius / D1 + (obsticals[obsOnRoad[0].first].y() - yGoal) * d2 / D2) / D2 * d2 + yGoal;
     }
     else // use rotation matrix to turn counterclockwise
     {
         x_vec = ((obsticals[obsOnRoad[0].first].x() - botPositionX) * d1 / D1 + (obsticals[obsOnRoad[0].first].y() - botPositionY) * radius / D1) / D1;
         y_vec = ((obsticals[obsOnRoad[0].first].x() - botPositionX) * -radius / D1 + (obsticals[obsOnRoad[0].first].y() - botPositionY) * d1 / D1) / D1;
+        p2.first = ((obsticals[obsOnRoad[0].first].x() - xGoal) * d2 / D2 + (obsticals[obsOnRoad[0].first].y() - yGoal) * -radius / D2) / D2 * d2 + xGoal;
+        p2.second = ((obsticals[obsOnRoad[0].first].x() - xGoal) * radius / D1 + (obsticals[obsOnRoad[0].first].y() - yGoal) * d2 / D2) / D2 * d2 + yGoal;
     }
     p1.first = x_vec * d1 + botPositionX;
     p1.second = y_vec * d1 + botPositionY;
-    p2.first = ((obsticals[obsOnRoad[0].first].x() - xGoal) * d2 / D2 + (obsticals[obsOnRoad[0].first].y() - yGoal) * radius / D2) / D2 * d2 + xGoal;
-    p2.second = ((obsticals[obsOnRoad[0].first].x() - xGoal) * -radius / D1 + (obsticals[obsOnRoad[0].first].y() - yGoal) * d2 / D2) / D2 * d2 + yGoal;
+
     cout << p2.first << " " << p2.second << endl;
     // calculate the angle of the curve to avoid the obstical
     theta = acos(((p1.first - obsticals[obsOnRoad[0].first].x()) * (p2.first - obsticals[obsOnRoad[0].first].x()) + (p1.second - obsticals[obsOnRoad[0].first].y()) * (p2.second - obsticals[obsOnRoad[0].first].y())) / pow(radius, 2));
@@ -148,8 +151,9 @@ void TurtleController::pointToDist(double xGoal, double yGoal, double wGoal)
             float x = pts[j].x();
             float y = pts[j].y();
             // use the four formula to check if the points are in the road area
-            if (y_vec * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) - R * hypot(x_vec, y_vec) / abs(x_vec) < 0 &&
-                y_vec * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) + R * hypot(x_vec, y_vec) / abs(x_vec) > 0 &&
+            if ((y_vec * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) - R * hypot(x_vec, y_vec) / abs(x_vec) < 0 &&
+                y_vec * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) + R * hypot(x_vec, y_vec) / abs(x_vec) > 0) || 
+                (x_vec / y_vec == 0 && y_vec != 0 && x - R < 0 && x + R > 0) &&
                 x_vec * x_vec / -y_vec * (x - botPositionX) - (y - botPositionY) < 0 &&
                 x_vec * x_vec / -y_vec * (x - xGoal) - (y - yGoal) > 0)
             {
