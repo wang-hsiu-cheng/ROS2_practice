@@ -22,6 +22,13 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/example.msg"
+  "srv/example.srv"
+  "action/example.action"
+)
 
 add_executable(talker src/lambda_publish.cpp)
 ament_target_dependencies(talker rclcpp std_msgs)
@@ -33,6 +40,10 @@ add_executable(listener1 src/subscribe.cpp)
 ament_target_dependencies(listener1 rclcpp std_msgs)
 # add_executable(talker2 src/callback_publish.cpp)
 # ament_target_dependencies(talker2 rclcpp std_msgs)
+add_executable(service_server src/service_server.cpp)
+ament_target_dependencies(server rclcpp std_msgs)
+add_executable(service_client src/service_client.cpp)
+ament_target_dependencies(listener1 rclcpp std_msgs)
 
 install(TARGETS
   talker
@@ -40,6 +51,8 @@ install(TARGETS
   talker1
   listener1
   # talker2
+  service_server
+  service_client
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
