@@ -1,1 +1,5 @@
-double x
+double64 a
+double64 b
+double64 c
+---
+double64 sum
