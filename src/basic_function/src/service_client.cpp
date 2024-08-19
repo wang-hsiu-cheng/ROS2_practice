@@ -17,9 +17,9 @@ int main(int argc, char **argv)
   }
 
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("add_three_doubles_client"); // CHANGE
-  rclcpp::Client<basic_function::srv::example>::SharedPtr client = node->create_client<basic_function::srv::example>("add_three_doubles");                  // CHANGE
+  rclcpp::Client<basic_function::srv::Example>::SharedPtr client = node->create_client<basic_function::srv::Example>("add_three_doubles");                  // CHANGE
 
-  auto request = std::make_shared<basic_function::srv::example::Request>();               // CHANGE
+  auto request = std::make_shared<basic_function::srv::Example::Request>();               // CHANGE
   request->a = atoll(argv[1]);
   request->b = atoll(argv[2]);
   request->c = atoll(argv[3]);               // CHANGE

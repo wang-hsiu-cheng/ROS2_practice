@@ -1,5 +1,5 @@
-double64 a
-double64 b
-double64 c
+float64 a
+float64 b
+float64 c
 ---
-double64 sum
+float64 sum
