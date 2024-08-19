@@ -15,19 +15,24 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Include directories
+include_directories(
+  include
+)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(rclcpp_action REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(basic_function REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/example.msg"
-  "srv/example.srv"
-  "action/example.action"
+  "msg/Example.msg"
+  "srv/Example.srv"
+  "action/Example.action"
 )
 
 add_executable(talker src/lambda_publish.cpp)
@@ -38,21 +43,26 @@ add_executable(talker1 src/publish.cpp)
 ament_target_dependencies(talker1 rclcpp std_msgs)
 add_executable(listener1 src/subscribe.cpp)
 ament_target_dependencies(listener1 rclcpp std_msgs)
-# add_executable(talker2 src/callback_publish.cpp)
-# ament_target_dependencies(talker2 rclcpp std_msgs)
+
 add_executable(service_server src/service_server.cpp)
-ament_target_dependencies(server rclcpp std_msgs)
+ament_target_dependencies(service_server rclcpp std_msgs basic_function)
 add_executable(service_client src/service_client.cpp)
-ament_target_dependencies(listener1 rclcpp std_msgs)
+ament_target_dependencies(service_client rclcpp std_msgs basic_function)
+add_executable(action_server src/action_server.cpp)
+ament_target_dependencies(action_server rclcpp rclcpp_action std_msgs basic_function)
+add_executable(action_client src/action_client.cpp)
+ament_target_dependencies(action_client rclcpp rclcpp_action std_msgs basic_function)
 
 install(TARGETS
   talker
   listener
   talker1
   listener1
-  # talker2
+
   service_server
   service_client
+  action_server
+  action_client
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
