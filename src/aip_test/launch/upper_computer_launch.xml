@@ -1,4 +1,0 @@
-<launch>
-    <node pkg="turtlesim" exec="turtlesim_node" name="turtlesim_node" />
-    <node pkg="aip_test" exec="talker" name="talker"/>
-</launch>
