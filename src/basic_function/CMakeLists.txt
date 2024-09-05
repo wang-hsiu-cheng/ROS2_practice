@@ -65,7 +65,9 @@ install(TARGETS
   action_client
   DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch/
+install(DIRECTORY 
+  launch/
+  # rviz/
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
