@@ -19,6 +19,7 @@ int main(int argc, char **argv)
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("add_three_doubles_client"); // CHANGE
   rclcpp::Client<basic_function::srv::Example>::SharedPtr client = node->create_client<basic_function::srv::Example>("add_three_doubles");                  // CHANGE
 
+  // setup request service
   auto request = std::make_shared<basic_function::srv::Example::Request>();               // CHANGE
   request->a = atoll(argv[1]);
   request->b = atoll(argv[2]);
@@ -32,6 +33,7 @@ int main(int argc, char **argv)
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
   }
 
+  // send request to the server
   auto result = client->async_send_request(request);
   // Wait for the result.
   if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)

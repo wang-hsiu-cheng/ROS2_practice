@@ -23,9 +23,9 @@ public:
       this,
       "example");
 
-    this->timer_ = this->create_wall_timer(
-      std::chrono::milliseconds(500),
-      std::bind(&ExampleActionClient::send_goal, this));
+    // this->timer_ = this->create_wall_timer(
+    //   std::chrono::milliseconds(500),
+    //   std::bind(&ExampleActionClient::send_goal, this));
   }
 
   void send_goal()
@@ -33,7 +33,7 @@ public:
     // rclcpp::spin_some(this->get_node_base_interface());
     using namespace std::placeholders;
 
-    this->timer_->cancel();
+    // this->timer_->cancel();
 
     if (!this->client_ptr_->wait_for_action_server()) {
       RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
