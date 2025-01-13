@@ -10,7 +10,7 @@
 class ExampleActionServer : public rclcpp::Node
 {
 public:
-  using Example = basic_function::action::Example;
+  using Example = communicate_test::action::Example;
   using GoalHandleExample = rclcpp_action::ServerGoalHandle<Example>;
 
   // ACTION_TUTORIALS_CPP_PUBLIC
@@ -24,7 +24,7 @@ public:
       this->get_node_clock_interface(),
       this->get_node_logging_interface(),
       this->get_node_waitables_interface(),
-      "example",
+      "example_test",
       std::bind(&ExampleActionServer::handle_goal, this, _1, _2),
       std::bind(&ExampleActionServer::handle_cancel, this, _1),
       std::bind(&ExampleActionServer::handle_accepted, this, _1));

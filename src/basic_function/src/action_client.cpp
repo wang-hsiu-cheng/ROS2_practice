@@ -13,7 +13,7 @@
 class ExampleActionClient : public rclcpp::Node
 {
 public:
-  using Example = basic_function::action::Example;
+  using Example = communicate_test::action::Example;
   using GoalHandleExample = rclcpp_action::ClientGoalHandle<Example>;
 
   explicit ExampleActionClient(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
@@ -21,19 +21,18 @@ public:
   {
     this->client_ptr_ = rclcpp_action::create_client<Example>(
       this,
-      "example");
+      "example_test");
 
-    // this->timer_ = this->create_wall_timer(
-    //   std::chrono::milliseconds(500),
-    //   std::bind(&ExampleActionClient::send_goal, this));
+    this->timer_ = this->create_wall_timer(
+      std::chrono::milliseconds(500),
+      std::bind(&ExampleActionClient::send_goal, this));
   }
 
   void send_goal()
   {
-    // rclcpp::spin_some(this->get_node_base_interface());
     using namespace std::placeholders;
 
-    // this->timer_->cancel();
+    this->timer_->cancel();
 
     if (!this->client_ptr_->wait_for_action_server()) {
       RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
