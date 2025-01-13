@@ -27,12 +27,12 @@ find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_components REQUIRED)
-find_package(basic_function REQUIRED)
+find_package(communicate_test REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Example.msg"
-  "srv/Example.srv"
-  "action/Example.action"
+  # "srv/Example.srv"
+  # "action/Example.action"
 )
 
 add_executable(talker src/lambda_publish.cpp)
@@ -45,13 +45,13 @@ add_executable(listener1 src/subscribe.cpp)
 ament_target_dependencies(listener1 rclcpp std_msgs)
 
 add_executable(service_server src/service_server.cpp)
-ament_target_dependencies(service_server rclcpp std_msgs basic_function)
+ament_target_dependencies(service_server rclcpp std_msgs communicate_test)
 add_executable(service_client src/service_client.cpp)
-ament_target_dependencies(service_client rclcpp std_msgs basic_function)
+ament_target_dependencies(service_client rclcpp std_msgs communicate_test)
 add_executable(action_server src/action_server.cpp)
-ament_target_dependencies(action_server rclcpp rclcpp_action std_msgs basic_function)
+ament_target_dependencies(action_server rclcpp rclcpp_action std_msgs communicate_test)
 add_executable(action_client src/action_client.cpp)
-ament_target_dependencies(action_client rclcpp rclcpp_action std_msgs basic_function)
+ament_target_dependencies(action_client rclcpp rclcpp_action std_msgs communicate_test)
 
 install(TARGETS
   talker

@@ -1,5 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
-#include "basic_function/srv/example.hpp"        // CHANGE
+#include "communicate_test/srv/example.hpp"        // CHANGE
 
 #include <chrono>
 #include <cstdlib>
@@ -15,7 +15,6 @@ int main(int argc, char **argv)
       RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "usage: add_three_doubles_client X Y Z");      // CHANGE
       return 1;
   }
-
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("add_three_doubles_client"); // CHANGE
   rclcpp::Client<basic_function::srv::Example>::SharedPtr client = node->create_client<basic_function::srv::Example>("add_three_doubles");                  // CHANGE
 

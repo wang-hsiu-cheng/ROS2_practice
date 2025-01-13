@@ -2,7 +2,7 @@
 #include <memory>
 #include <thread>
 
-#include "basic_function/action/example.hpp"
+#include "communicate_test/action/example.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_components/register_node_macro.hpp"

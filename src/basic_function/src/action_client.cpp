@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 
-#include "basic_function/action/example.hpp"
+#include "communicate_test/action/example.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
