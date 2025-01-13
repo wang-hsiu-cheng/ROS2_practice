@@ -27,6 +27,7 @@ int main(int argc, char * argv[])
 {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<SubscriberNode>());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Finish node");
     rclcpp::shutdown();
     
     return 0;

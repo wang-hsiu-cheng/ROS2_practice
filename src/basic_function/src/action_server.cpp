@@ -20,11 +20,8 @@ public:
     using namespace std::placeholders;
 
     this->action_server_ = rclcpp_action::create_server<Example>(
-      this->get_node_base_interface(),
-      this->get_node_clock_interface(),
-      this->get_node_logging_interface(),
-      this->get_node_waitables_interface(),
-      "example_test",
+      this,
+      "example_action",
       std::bind(&ExampleActionServer::handle_goal, this, _1, _2),
       std::bind(&ExampleActionServer::handle_cancel, this, _1),
       std::bind(&ExampleActionServer::handle_accepted, this, _1));
