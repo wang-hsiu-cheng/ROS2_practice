@@ -153,9 +153,9 @@ void TurtleController::pointToDist(double xGoal, double yGoal, double wGoal)
             // use the four formula to check if the points are in the road area
             if ((y_vec * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) - R * hypot(x_vec, y_vec) / abs(x_vec) < 0 &&
                 y_vec * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) + R * hypot(x_vec, y_vec) / abs(x_vec) > 0) || 
-                (x_vec / y_vec == 0 && y_vec != 0 && x - R < 0 && x + R > 0) &&
+                ((x_vec / y_vec == 0 && y_vec != 0 && x - R < 0 && x + R > 0) &&
                 x_vec * x_vec / -y_vec * (x - botPositionX) - (y - botPositionY) < 0 &&
-                x_vec * x_vec / -y_vec * (x - xGoal) - (y - yGoal) > 0)
+                x_vec * x_vec / -y_vec * (x - xGoal) - (y - yGoal) > 0))
             {
                 pair<int, bool> temp(i, true);
                 if ((y_vec / x_vec) * y_vec / x_vec * (x - botPositionX) - (y - botPositionY) < 0) // should turn counterclockwise

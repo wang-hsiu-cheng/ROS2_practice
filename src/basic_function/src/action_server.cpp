@@ -2,7 +2,7 @@
 #include <memory>
 #include <thread>
 
-#include "basic_function/action/example.hpp"
+#include "communicate_test/action/example.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
@@ -10,7 +10,7 @@
 class ExampleActionServer : public rclcpp::Node
 {
 public:
-  using Example = basic_function::action::Example;
+  using Example = communicate_test::action::Example;
   using GoalHandleExample = rclcpp_action::ServerGoalHandle<Example>;
 
   // ACTION_TUTORIALS_CPP_PUBLIC
@@ -20,11 +20,8 @@ public:
     using namespace std::placeholders;
 
     this->action_server_ = rclcpp_action::create_server<Example>(
-      this->get_node_base_interface(),
-      this->get_node_clock_interface(),
-      this->get_node_logging_interface(),
-      this->get_node_waitables_interface(),
-      "example",
+      this,
+      "example_action",
       std::bind(&ExampleActionServer::handle_goal, this, _1, _2),
       std::bind(&ExampleActionServer::handle_cancel, this, _1),
       std::bind(&ExampleActionServer::handle_accepted, this, _1));

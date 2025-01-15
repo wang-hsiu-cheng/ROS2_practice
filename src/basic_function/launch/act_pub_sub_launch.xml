@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="basic_function" exec="action_server" name="action_server"/>
+    <node pkg="basic_function" exec="action_client" name="action_client"/>
+</launch>

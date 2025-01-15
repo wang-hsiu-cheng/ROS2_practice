@@ -1,0 +1,31 @@
+version: '3'
+name: eurobot
+services:
+  foxgolve_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        TimeZone: Asia/Taipei
+    image: ros2-humble-basic:latest
+    container_name: ros2_test
+    stdin_open: true
+    tty: true
+    privileged: true # power as root
+    shm_size: '3gb'
+    volumes:
+      # default plugins
+      - /d/.Xauthority:/root/.Xauthority
+      - /d/Documents/ROS2_practice:/root/ROS2_practice
+      - /dev:/dev # I/O 設備掛載
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw # 掛載 X11 socket 以支持 GUI
+    environment:
+      # environment variable that want to bring into container
+      - DISPLAY=host.docker.internal:0.0 # use local computer's screen to display
+      - XAUTHORITY=/root/.Xauthority
+    network_mode: host # use master computer's network
+    devices:
+      - /dev/bus/usb
+    ports:
+      - "8765:8765"
+    command: /bin/bash -c "source /opt/ros/humble/setup.bash && exec bash"

@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 
-#include "basic_function/action/example.hpp"
+#include "communicate_test/action/example.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -13,7 +13,7 @@
 class ExampleActionClient : public rclcpp::Node
 {
 public:
-  using Example = basic_function::action::Example;
+  using Example = communicate_test::action::Example;
   using GoalHandleExample = rclcpp_action::ClientGoalHandle<Example>;
 
   explicit ExampleActionClient(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
@@ -21,7 +21,7 @@ public:
   {
     this->client_ptr_ = rclcpp_action::create_client<Example>(
       this,
-      "example");
+      "example_action");
 
     this->timer_ = this->create_wall_timer(
       std::chrono::milliseconds(500),
@@ -30,7 +30,6 @@ public:
 
   void send_goal()
   {
-    // rclcpp::spin_some(this->get_node_base_interface());
     using namespace std::placeholders;
 
     this->timer_->cancel();
@@ -46,8 +45,8 @@ public:
     RCLCPP_INFO(this->get_logger(), "Sending goal");
 
     auto send_goal_options = rclcpp_action::Client<Example>::SendGoalOptions();
-    send_goal_options.goal_response_callback =
-      std::bind(&ExampleActionClient::goal_response_callback, this, _1);
+    // send_goal_options.goal_response_callback = 
+    //   std::bind(&ExampleActionClient::goal_response_callback, this, std::placeholders::_1);
     send_goal_options.feedback_callback =
       std::bind(&ExampleActionClient::feedback_callback, this, _1, _2);
     send_goal_options.result_callback =
@@ -105,14 +104,13 @@ private:
     rclcpp::shutdown();
   }
 };  // class ExampleActionClient
+// RCLCPP_COMPONENTS_REGISTER_NODE(basic_function::ExampleActionClient)
 
 int main(int argc, char **argv)
 {
   rclcpp::init(argc, argv);
 
   auto action_server = std::make_shared<ExampleActionClient>();
-
-  action_server->send_goal();
 
   rclcpp::spin(action_server);
   
